@@ -1,0 +1,35 @@
+spring:
+  config:
+    activate:
+      on-profile: standalone
+
+  datasource:
+    url: jdbc:h2:file:D:/mysql/ticketflow_db/ticketflow;AUTO_SERVER=TRUE;DB_CLOSE_DELAY=-1;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+
+  flyway:
+    enabled: false
+
+  data:
+    redis:
+      host: localhost
+      port: 6379
+
+app:
+  standalone: true
+  rate-limit:
+    ip-permits-per-second: 20
+    burst-capacity: 40
+    window-seconds: 1
+
+logging:
+  level:
+    com.ticket: INFO
+    org.springframework: INFO
