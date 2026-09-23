@@ -19,6 +19,7 @@ public class HoldTicketResponse {
     private UUID eventId;
     private UUID userId;
     private int ticketCount;
+    private String seatNumbers;
     private BigDecimal totalAmount;
     private OrderStatus status;
     private Instant holdExpiresAt;

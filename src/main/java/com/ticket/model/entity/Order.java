@@ -32,6 +32,9 @@ public class Order {
     @Column(name = "ticket_count", nullable = false)
     private Integer ticketCount;
 
+    @Column(name = "seat_numbers", length = 255)
+    private String seatNumbers;
+
     @Column(name = "total_amount", nullable = false)
     private BigDecimal totalAmount;
 

@@ -21,4 +21,6 @@ public class HoldTicketRequest {
     @Min(value = 1, message = "At least 1 ticket must be requested")
     @Max(value = 10, message = "Maximum 10 tickets allowed per hold")
     private int ticketCount;
+
+    private String selectedSeats;
 }

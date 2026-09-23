@@ -47,7 +47,7 @@ public class OrderController {
             throw new QueueAdmissionException("Admission token was issued for a different event.");
         }
 
-        HoldTicketResponse response = orderService.holdTickets(user.getId(), request.getEventId(), request.getTicketCount());
+        HoldTicketResponse response = orderService.holdTickets(user.getId(), request.getEventId(), request.getTicketCount(), request.getSelectedSeats());
         return ResponseEntity.ok(ApiResponse.ok("Tickets successfully held for checkout", response));
     }
 

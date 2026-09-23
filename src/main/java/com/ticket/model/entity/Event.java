@@ -4,6 +4,7 @@ import com.ticket.model.enums.EventStatus;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -34,6 +35,12 @@ public class Event {
 
     @Column(name = "total_tickets", nullable = false)
     private Integer totalTickets;
+
+    @Column(name = "price_per_seat")
+    private BigDecimal pricePerSeat;
+
+    @Column(name = "rate_limit_per_minute")
+    private Integer rateLimitPerMinute;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

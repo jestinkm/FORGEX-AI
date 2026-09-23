@@ -15,6 +15,7 @@ import java.util.UUID;
 public class AdminActivityLogResponse {
     private UUID id;
     private UUID userId;
+    private String userName;
     private String userEmail;
     private String action;
     private String details;

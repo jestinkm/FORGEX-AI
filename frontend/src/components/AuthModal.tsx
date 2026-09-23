@@ -10,6 +10,7 @@ interface AuthModalProps {
 
 export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -29,12 +30,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
     try {
       if (mode === 'login') {
         const res = await authApi.login(email, password);
-        setAuth(res.token, { id: res.userId, email: res.email, role: res.role });
+        setAuth(res.token, { id: res.userId, email: res.email, name: res.name, role: res.role });
         setSuccessMsg('Successfully logged in!');
         setTimeout(onClose, 800);
       } else {
-        const res = await authApi.register(email, password);
-        setAuth(res.token, { id: res.userId, email: res.email, role: res.role });
+        const res = await authApi.register(email, password, name);
+        setAuth(res.token, { id: res.userId, email: res.email, name: res.name, role: res.role });
         setSuccessMsg('Account created successfully!');
         setTimeout(onClose, 800);
       }
@@ -104,6 +105,23 @@ export const AuthModal: React.FC<AuthModalProps> = ({ isOpen, onClose }) => {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {mode === 'register' && (
+            <div>
+              <label className="block text-xs font-medium text-slate-300 mb-1.5">Full Name</label>
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Priya Sharma / Alex Johnson"
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none placeholder-slate-500"
+                />
+                <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+              </div>
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
             <div className="relative">

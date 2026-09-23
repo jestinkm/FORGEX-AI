@@ -11,11 +11,18 @@ import {
   AdminOverview,
   AdminBookingItem,
   AdminInventoryItem,
+  BlockchainBlock,
+  BlockchainVerifyResponse,
+  BlockchainStats,
+  SectionDto,
+  SeatingLayoutResponse,
+  TicketVerifyResponse,
+  CreateAdminEventRequest,
 } from '../types';
 
 export const authApi = {
-  register: async (email: string, password: string) => {
-    const res = await api.post<ApiResponse<AuthResponse>>('/api/auth/register', { email, password });
+  register: async (email: string, password: string, name?: string) => {
+    const res = await api.post<ApiResponse<AuthResponse>>('/api/auth/register', { email, password, name });
     return res.data.data;
   },
   login: async (email: string, password: string) => {
@@ -47,6 +54,10 @@ export const eventsApi = {
     const res = await api.get<ApiResponse<EventItem>>(`/api/events/${id}`);
     return res.data.data;
   },
+  getReservedSeats: async (eventId: string) => {
+    const res = await api.get<ApiResponse<string[]>>(`/api/events/${eventId}/reserved-seats`);
+    return res.data.data;
+  },
 };
 
 export const queueApi = {
@@ -67,10 +78,11 @@ export const queueApi = {
 };
 
 export const ordersApi = {
-  hold: async (eventId: string, ticketCount: number) => {
+  hold: async (eventId: string, ticketCount: number, selectedSeats?: string) => {
     const res = await api.post<ApiResponse<HoldTicketResponse>>('/api/orders/hold', {
       eventId,
       ticketCount,
+      selectedSeats,
     });
     return res.data.data;
   },
@@ -130,4 +142,74 @@ export const adminApi = {
     const res = await api.post<ApiResponse<string>>('/api/admin/admission-rate', { batchSize });
     return res.data.message;
   },
+  getUserAccessFrequencies: async () => {
+    const res = await api.get<ApiResponse<import('../types').UserAccessFrequencyItem[]>>('/api/admin/user-access-frequencies');
+    return res.data.data;
+  },
+  createEvent: async (request: CreateAdminEventRequest) => {
+    const res = await api.post<ApiResponse<AdminInventoryItem>>('/api/admin/events', request);
+    return res.data.data;
+  },
 };
+
+export const blockchainApi = {
+  getChain: async () => {
+    const res = await api.get<ApiResponse<BlockchainBlock[]>>('/api/blockchain/chain');
+    return res.data.data;
+  },
+  getBlockByOrderId: async (orderId: string) => {
+    const res = await api.get<ApiResponse<BlockchainBlock>>(`/api/blockchain/block/${orderId}`);
+    return res.data.data;
+  },
+  verifyChain: async () => {
+    const res = await api.get<ApiResponse<BlockchainVerifyResponse>>('/api/blockchain/verify');
+    return res.data.data;
+  },
+  getStats: async () => {
+    const res = await api.get<ApiResponse<BlockchainStats>>('/api/blockchain/stats');
+    return res.data.data;
+  },
+};
+
+export const seatingApi = {
+  getLayout: async (eventId: string) => {
+    const res = await api.get<ApiResponse<SeatingLayoutResponse>>(`/api/seating/layout/${eventId}`);
+    return res.data.data;
+  },
+  saveLayout: async (eventId: string, sections: SectionDto[]) => {
+    const res = await api.post<ApiResponse<SeatingLayoutResponse>>(`/api/seating/admin/layout/${eventId}`, {
+      eventId,
+      sections,
+    });
+    return res.data.data;
+  },
+  toggleBlockSeat: async (eventId: string, seatCode: string, blocked: boolean) => {
+    const res = await api.post<ApiResponse<boolean>>('/api/seating/admin/block', {
+      eventId,
+      seatCode,
+      blocked,
+    });
+    return res.data.data;
+  },
+  updatePrice: async (eventId: string, sectionCode: string, basePrice: number) => {
+    const res = await api.post<ApiResponse<boolean>>('/api/seating/admin/price', {
+      eventId,
+      sectionCode,
+      basePrice,
+    });
+    return res.data.data;
+  },
+};
+
+export const ticketsApi = {
+  verify: async (ticketOrOrderId: string) => {
+    const res = await api.get<ApiResponse<TicketVerifyResponse>>(`/api/tickets/verify/${encodeURIComponent(ticketOrOrderId)}`);
+    return res.data.data;
+  },
+  admit: async (ticketOrOrderId: string) => {
+    const res = await api.post<ApiResponse<TicketVerifyResponse>>(`/api/tickets/admit/${encodeURIComponent(ticketOrOrderId)}`);
+    return res.data.data;
+  },
+};
+
+

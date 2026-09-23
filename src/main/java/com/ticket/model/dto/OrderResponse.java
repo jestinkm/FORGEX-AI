@@ -20,8 +20,14 @@ public class OrderResponse {
     private UUID eventId;
     private String eventName;
     private int ticketCount;
+    private String seatNumbers;
     private BigDecimal totalAmount;
     private OrderStatus status;
+    private String blockHash;
+    private Long blockIndex;
+    private String tokenId;
+    private String contractAddress;
+    private String buyerWallet;
     private Instant createdAt;
     private Instant updatedAt;
 }

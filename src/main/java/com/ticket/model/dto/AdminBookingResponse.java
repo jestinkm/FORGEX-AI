@@ -23,7 +23,9 @@ public class AdminBookingResponse {
     private String eventName;
     private String venue;
     private int ticketCount;
+    private String seatNumbers;
     private BigDecimal totalAmount;
+    private BigDecimal costPerSeat;
     private OrderStatus status;
     private Instant createdAt;
 }

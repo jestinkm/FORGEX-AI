@@ -1,35 +1,44 @@
 @echo off
-title TicketFlow Flash Sale - Starting Both Services...
+title TicketFlow Flash Sale - Launcher
 color 0A
 
 echo ======================================================================
-echo           TicketFlow Flash Sale Platform - Launcher
+echo           FairSeat High-Concurrency Flash Sale Platform - Launcher
 echo           Starting Backend (Spring Boot) and Frontend (Vite)
 echo ======================================================================
 echo.
 
-cd /d "E:\hack"
+set "ROOT_DIR=%~dp0"
+if "%ROOT_DIR:~-1%"=="\" set "ROOT_DIR=%ROOT_DIR:~0,-1%"
+cd /d "%ROOT_DIR%"
 
-:: Locate Java 21
-set "JAVA_EXE=C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot\bin\java.exe"
-if not exist "%JAVA_EXE%" (
-    set "JAVA_EXE=java"
+echo [1/4] Checking and freeing ports 8080 and 3000...
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":8080" ^| findstr "LISTENING"') do (
+    echo Stopping existing process on port 8080 (PID: %%a)...
+    taskkill /F /PID %%a >nul 2>&1
 )
-
-echo [1/3] Starting Spring Boot Backend on http://localhost:8080 ...
-start "TicketFlow Backend (Port 8080)" /min cmd /c "cd /d E:\hack && "%JAVA_EXE%" -Dspring.profiles.active=standalone -jar target\flash-sale-backend-1.0.0-SNAPSHOT.jar"
-
-echo [2/3] Waiting for Backend initialization (5 seconds)...
-timeout /t 5 /nobreak >nul
-
-echo [3/3] Starting Vite Frontend on http://localhost:3000 ...
-start "TicketFlow Frontend (Port 3000)" cmd /c "cd /d E:\hack\frontend && npm.cmd run dev"
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr ":3000" ^| findstr "LISTENING"') do (
+    echo Stopping existing process on port 3000 (PID: %%a)...
+    taskkill /F /PID %%a >nul 2>&1
+)
+timeout /t 1 /nobreak >nul
 
 echo.
-echo Waiting for frontend dev server to start (3 seconds)...
-timeout /t 3 /nobreak >nul
+echo [2/4] Starting FairSeat Backend on http://localhost:8080 ...
+start "FairSeat Backend (Port 8080)" "%ROOT_DIR%\run-backend.bat"
 
-:: Automatically open browser
+echo.
+echo [3/4] Waiting 6 seconds for backend initialization...
+timeout /t 6 /nobreak >nul
+
+echo.
+echo [4/4] Starting FairSeat Frontend on http://localhost:3000 ...
+start "FairSeat Frontend (Port 3000)" "%ROOT_DIR%\run-frontend.bat"
+
+echo.
+echo Waiting 4 seconds for frontend server...
+timeout /t 4 /nobreak >nul
+
 start http://localhost:3000
 
 echo.
@@ -37,16 +46,19 @@ echo ======================================================================
 echo   SUCCESS! Both Frontend and Backend are running together!
 echo ======================================================================
 echo.
-echo   - Frontend: http://localhost:3000
-echo   - Login Page: http://localhost:3000/login
-echo   - Backend APIs: http://localhost:8080/api/events
-echo   - Swagger Docs: http://localhost:8080/swagger-ui.html
+echo   - Storefront:    http://localhost:3000
+echo   - Seating Map:   http://localhost:3000/checkout/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+echo   - Gate Verify:   http://localhost:3000/verify-ticket
+echo   - Admin Center:  http://localhost:3000/admin
+echo   - Seating API:   http://localhost:8080/api/seating/layout/aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa
+echo   - Ticket Verify: http://localhost:8080/api/tickets/verify/FS-10E4B848
+echo   - Blockchain:    http://localhost:8080/api/blockchain/stats
 echo.
 echo   Demo Login Credentials:
 echo     Buyer: buyer1@ticketflow.com  / Password: Password123!
 echo     Admin: admin@ticketflow.com   / Password: Password123!
 echo.
-echo   (Keep the separate Backend and Frontend command windows open!)
+echo   (Both command windows are running. Keep them open!)
 echo ======================================================================
 echo.
 pause

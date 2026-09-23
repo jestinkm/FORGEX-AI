@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -19,6 +20,7 @@ public class AdminInventoryResponse {
     private int availableCount;
     private int heldCount;
     private int soldCount;
+    private BigDecimal costPerSeat;
     private long version;
     private Instant updatedAt;
 }

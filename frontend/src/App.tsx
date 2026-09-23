@@ -14,6 +14,8 @@ const ConfirmationPage = lazy(() => import('./pages/ConfirmationPage').then((m) 
 const SoldOutPage = lazy(() => import('./pages/SoldOutPage').then((m) => ({ default: m.SoldOutPage })));
 const LoginPage = lazy(() => import('./pages/LoginPage').then((m) => ({ default: m.LoginPage })));
 const AdminDashboardPage = lazy(() => import('./pages/AdminDashboardPage').then((m) => ({ default: m.AdminDashboardPage })));
+const TicketVerificationPage = lazy(() => import('./pages/TicketVerificationPage').then((m) => ({ default: m.TicketVerificationPage })));
+const BlockchainExplorerPage = lazy(() => import('./pages/BlockchainExplorerPage').then((m) => ({ default: m.BlockchainExplorerPage })));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -48,6 +50,8 @@ export const App: React.FC = () => {
                 <Route path="/checkout/:eventId" element={<CheckoutPage />} />
                 <Route path="/payment/:orderId" element={<PaymentPage />} />
                 <Route path="/confirmation/:orderId" element={<ConfirmationPage />} />
+                <Route path="/verify-ticket" element={<TicketVerificationPage />} />
+                <Route path="/blockchain" element={<BlockchainExplorerPage />} />
                 <Route path="/sold-out" element={<SoldOutPage />} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>

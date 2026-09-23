@@ -19,8 +19,10 @@ public class AdminOverviewResponse {
     private long heldSeats;
     private long soldSeats;
     private BigDecimal totalRevenue;
+    private BigDecimal costPerSeat;
     private long totalUsers;
     private List<AdminInventoryResponse> events;
     private List<AdminBookingResponse> recentBookings;
     private List<AdminActivityLogResponse> recentActivities;
+    private List<UserAccessFrequencyResponse> userAccessFrequencies;
 }

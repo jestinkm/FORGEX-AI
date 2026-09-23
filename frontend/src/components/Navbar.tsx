@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Ticket, User as UserIcon, LogOut, LogIn, ShieldCheck, Sliders } from 'lucide-react';
+import { Ticket, User as UserIcon, LogOut, LogIn, ShieldCheck, Sliders, QrCode, Layers } from 'lucide-react';
 import { useAuthStore } from '../store/authStore';
 import { useQueueStore } from '../store/queueStore';
 import { AuthModal } from './AuthModal';
@@ -28,16 +28,35 @@ export const Navbar: React.FC = () => {
               </div>
               <div>
                 <span className="text-xl font-bold bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-                  Ticket<span className="text-brand-400">Flow</span>
+                  Fair<span className="text-brand-400">Seat</span>
                 </span>
                 <span className="hidden sm:inline-block ml-2 px-2 py-0.5 text-xs font-semibold uppercase tracking-wider rounded-full bg-brand-900/60 text-brand-300 border border-brand-700/50">
-                  Flash Sale Engine
+                  Flash-Sale Platform
                 </span>
               </div>
             </Link>
 
             {/* Right Navigation & Status Indicators */}
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-3 sm:space-x-4">
+              {/* Blockchain Ledger Link */}
+              <Link
+                to="/blockchain"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-purple-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all shadow-sm"
+              >
+                <Layers className="w-3.5 h-3.5 text-purple-400" />
+                <span className="hidden sm:inline">Blockchain Ledger</span>
+                <span className="sm:hidden">Ledger</span>
+              </Link>
+
+              {/* Gate Pass Verification Link */}
+              <Link
+                to="/verify-ticket"
+                className="hidden sm:flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-indigo-300 hover:text-white border border-slate-700 text-xs font-semibold transition-all"
+              >
+                <QrCode className="w-3.5 h-3.5 text-indigo-400" />
+                <span>Gate Pass Verify</span>
+              </Link>
+
               {/* Admission Status Badge if Admitted */}
               {admissionToken && status === 'ADMITTED' && (
                 <div className="hidden md:flex items-center space-x-1.5 px-3 py-1 rounded-full bg-surge-emerald/10 border border-surge-emerald/30 text-surge-emerald text-xs font-medium animate-pulse">

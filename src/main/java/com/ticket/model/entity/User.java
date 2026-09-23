@@ -28,6 +28,9 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @Column(name = "name")
+    private String name;
+
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;
 
@@ -81,5 +84,26 @@ public class User implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    public String getDisplayName() {
+        if (name != null && !name.isBlank()) {
+            return name.trim();
+        }
+        if (email != null && email.contains("@")) {
+            String prefix = email.split("@")[0].replaceAll("[._-]", " ").trim();
+            if (!prefix.isEmpty()) {
+                StringBuilder sb = new StringBuilder();
+                for (String word : prefix.split("\\s+")) {
+                    if (!word.isEmpty()) {
+                        sb.append(Character.toUpperCase(word.charAt(0)))
+                          .append(word.substring(1).toLowerCase())
+                          .append(" ");
+                    }
+                }
+                return sb.toString().trim();
+            }
+        }
+        return "Customer";
     }
 }

@@ -1,0 +1,14 @@
+{
+  "name": "ticketflow-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "TicketFlow High-Concurrency Flash Sale Platform with Blockchain Theatre Ledger",
+  "scripts": {
+    "start": "cmd /c start-all.bat",
+    "dev": "cmd /c start-all.bat",
+    "frontend": "npm --prefix frontend run dev",
+    "backend": "\"C:\\Program Files\\Microsoft\\jdk-21.0.12.101-hotspot\\bin\\java.exe\" -Dspring.profiles.active=standalone -jar target/flash-sale-backend-1.0.0-SNAPSHOT.jar",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "mvn clean package -DskipTests"
+  }
+}

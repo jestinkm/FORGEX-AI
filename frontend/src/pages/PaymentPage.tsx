@@ -15,10 +15,13 @@ import {
   ExternalLink,
   Lock,
   Sparkles,
+  Armchair,
+  User,
 } from 'lucide-react';
 import { paymentsApi, ordersApi, captchaApi } from '../api/endpoints';
 import { useOrderStore } from '../store/orderStore';
 import { useQueueStore } from '../store/queueStore';
+import { useAuthStore } from '../store/authStore';
 import { HoldCountdownTimer } from '../components/HoldCountdownTimer';
 
 type UpiMode = 'qr' | 'vpa';
@@ -48,7 +51,9 @@ export const PaymentPage: React.FC = () => {
   const [captchaError, setCaptchaError] = useState<string | null>(null);
 
   // 2. UPI Payment State
+  const { user } = useAuthStore();
   const [upiMode, setUpiMode] = useState<UpiMode>('qr');
+  const [qrType, setQrType] = useState<'dynamic' | 'merchant'>('dynamic');
   const [upiId, setUpiId] = useState('buyer@okaxis');
   const [utrNumber, setUtrNumber] = useState('');
   const [copied, setCopied] = useState(false);
@@ -56,8 +61,16 @@ export const PaymentPage: React.FC = () => {
   const [errorStatus, setErrorStatus] = useState<string | null>(null);
   const [approvalCountdown, setApprovalCountdown] = useState<number>(180); // 3 minutes
 
+  const buyerDisplayName = user?.name || user?.email?.split('@')[0] || 'TicketFlow Buyer';
+  const buyerEmail = user?.email || 'customer@ticketflow.com';
+  const assignedSeats = currentHold?.seatNumbers || 'VIP-A01';
+
   const totalAmount = currentHold?.totalAmount ?? 1.0;
   const inrAmount = Math.max(1, Math.round(totalAmount));
+
+  // Dynamic UPI deep-link strictly auto-filling receiver, exact amount, and seats
+  const dynamicUpiPayload = `upi://pay?pa=${RECEIVER_UPI}&pn=${encodeURIComponent(RECEIVER_NAME)}&am=${inrAmount}&cu=INR&tn=TicketFlow_Seats_${encodeURIComponent(assignedSeats)}_Order_${orderId.substring(0, 8)}&tr=${orderId}`;
+  const dynamicQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(dynamicUpiPayload)}&margin=12`;
 
   // Load CAPTCHA challenge on mount
   const fetchCaptcha = async () => {
@@ -391,28 +404,113 @@ export const PaymentPage: React.FC = () => {
           </div>
 
           {upiMode === 'qr' ? (
-            /* QR Code Mode - Real Google Pay UPI QR */
+            /* QR Code Mode - Dynamic Personalized UPI QR */
             <div className="space-y-6 text-center">
-              <div className="p-4 sm:p-5 rounded-3xl bg-white text-slate-950 inline-block shadow-2xl border-4 border-emerald-500/40 max-w-xs sm:max-w-sm">
-                <div className="flex items-center justify-center space-x-2 mb-2 pb-2 border-b border-slate-200">
-                  <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
-                    UPI
+              {/* Payer & Seat Allocation Card */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-brand-950/60 via-slate-900 to-emerald-950/40 border border-brand-500/30 text-left max-w-md mx-auto shadow-lg">
+                <div className="flex items-center justify-between pb-2.5 mb-2.5 border-b border-slate-800">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-7 h-7 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center font-bold text-xs">
+                      <User className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="text-[10px] text-slate-400 uppercase tracking-wider block">Payer Identity</span>
+                      <span className="text-xs font-bold text-white">{buyerDisplayName}</span>
+                    </div>
                   </div>
-                  <span className="font-bold text-xs text-slate-800 tracking-tight">
-                    {RECEIVER_NAME}
+                  <span className="text-[11px] font-mono text-slate-400">{buyerEmail}</span>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block mb-0.5">Assigned Seats</span>
+                    <span className="font-mono font-bold text-amber-300 flex items-center space-x-1">
+                      <Armchair className="w-3.5 h-3.5 text-amber-400 inline" />
+                      <span>{assignedSeats}</span>
+                    </span>
+                  </div>
+                  <div className="p-2 rounded-xl bg-slate-950/60 border border-slate-800">
+                    <span className="text-[10px] text-slate-400 block mb-0.5">Order Reference</span>
+                    <span className="font-mono font-bold text-slate-200">#{orderId.substring(0, 8)}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Dynamic vs Merchant QR Toggle */}
+              <div className="inline-flex bg-slate-900 p-1 rounded-xl border border-slate-800 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setQrType('dynamic')}
+                  className={`py-1.5 px-3 rounded-lg font-semibold transition-all ${
+                    qrType === 'dynamic'
+                      ? 'bg-brand-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  ⚡ Dynamic Order QR (Auto-Fills Amount)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setQrType('merchant')}
+                  className={`py-1.5 px-3 rounded-lg font-semibold transition-all ${
+                    qrType === 'merchant'
+                      ? 'bg-brand-600 text-white shadow-sm'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  📷 Direct GPay QR
+                </button>
+              </div>
+
+              {/* The QR Code Card */}
+              <div className="p-4 sm:p-5 rounded-3xl bg-white text-slate-950 inline-block shadow-2xl border-4 border-emerald-500/40 max-w-xs sm:max-w-sm">
+                <div className="flex items-center justify-between mb-2 pb-2 border-b border-slate-200 text-left">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-6 h-6 rounded-full bg-slate-900 text-white flex items-center justify-center text-[10px] font-bold">
+                      UPI
+                    </div>
+                    <div>
+                      <span className="font-bold text-xs text-slate-800 tracking-tight block">
+                        {RECEIVER_NAME}
+                      </span>
+                      <span className="text-[10px] text-slate-500 font-mono block leading-none">
+                        {RECEIVER_UPI}
+                      </span>
+                    </div>
+                  </div>
+                  <span className="text-xs font-black font-mono text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                    ₹{inrAmount}.00
                   </span>
                 </div>
 
-                {/* Real User Google Pay QR Code */}
-                <img
-                  src="/upi_qr.jpg"
-                  alt={`UPI QR Code - ${RECEIVER_NAME}`}
-                  className="w-64 sm:w-72 h-auto mx-auto rounded-xl object-contain shadow-inner"
-                />
+                {qrType === 'dynamic' ? (
+                  /* Dynamic QR generated specifically with orderId, exact amount, and seats */
+                  <div className="relative">
+                    <img
+                      src={dynamicQrUrl}
+                      alt={`Personalized Dynamic UPI QR for ${buyerDisplayName}`}
+                      className="w-64 sm:w-72 h-auto mx-auto rounded-xl object-contain shadow-inner"
+                    />
+                    <div className="mt-2 text-[10px] font-mono text-slate-600 bg-slate-100 py-1 px-2 rounded">
+                      Personalized for <strong>{buyerDisplayName}</strong> • Seats: <strong>{assignedSeats}</strong>
+                    </div>
+                  </div>
+                ) : (
+                  /* Static Merchant GPay QR Code */
+                  <img
+                    src="/upi_qr.jpg"
+                    alt={`UPI QR Code - ${RECEIVER_NAME}`}
+                    className="w-64 sm:w-72 h-auto mx-auto rounded-xl object-contain shadow-inner"
+                  />
+                )}
 
                 <div className="mt-3 pt-2 border-t border-slate-200 text-center">
-                  <div className="text-[11px] text-slate-500 font-medium">Scan to pay with any UPI app</div>
-                  <div className="flex items-center justify-center space-x-1.5 mt-1">
+                  <div className="text-[11px] text-slate-600 font-semibold">
+                    {qrType === 'dynamic'
+                      ? '⚡ Auto-fills exact ₹' + inrAmount + '.00 and seats in your app'
+                      : 'Scan to pay with any UPI app'}
+                  </div>
+                  <div className="flex items-center justify-center space-x-1.5 mt-1.5">
                     <span className="px-2 py-0.5 rounded bg-blue-50 text-[10px] font-bold text-blue-600 border border-blue-200">GPay</span>
                     <span className="px-2 py-0.5 rounded bg-purple-50 text-[10px] font-bold text-purple-600 border border-purple-200">PhonePe</span>
                     <span className="px-2 py-0.5 rounded bg-cyan-50 text-[10px] font-bold text-cyan-600 border border-cyan-200">Paytm</span>
@@ -423,7 +521,7 @@ export const PaymentPage: React.FC = () => {
 
               {/* Payee Details Card */}
               <div className="p-4 rounded-2xl bg-slate-900/90 border border-slate-800 max-w-md mx-auto text-center space-y-2">
-                <div className="text-xs text-slate-400">Receiver Name</div>
+                <div className="text-xs text-slate-400">Verified Payee Account</div>
                 <div className="text-base font-extrabold text-white tracking-wide">{RECEIVER_NAME}</div>
 
                 <div className="flex items-center justify-center space-x-2 pt-1">
@@ -452,10 +550,10 @@ export const PaymentPage: React.FC = () => {
                 {/* Mobile Direct Pay Link */}
                 <div className="pt-2">
                   <a
-                    href={`upi://pay?pa=${RECEIVER_UPI}&pn=${encodeURIComponent(RECEIVER_NAME)}&am=${inrAmount}&cu=INR&tn=TicketFlow%20Order%20${orderId.substring(0, 8)}`}
+                    href={dynamicUpiPayload}
                     className="inline-flex items-center space-x-1.5 text-xs text-brand-400 hover:text-brand-300 underline font-medium"
                   >
-                    <span>Tap to Pay directly in UPI App (Mobile)</span>
+                    <span>Tap to Pay directly in Google Pay / UPI App (Mobile)</span>
                     <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 </div>

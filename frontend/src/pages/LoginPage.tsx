@@ -6,6 +6,7 @@ import { useAuthStore } from '../store/authStore';
 
 export const LoginPage: React.FC = () => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -24,7 +25,7 @@ export const LoginPage: React.FC = () => {
     try {
       if (mode === 'login') {
         const res = await authApi.login(email, password);
-        setAuth(res.token, { id: res.userId, email: res.email, role: res.role });
+        setAuth(res.token, { id: res.userId, email: res.email, name: res.name, role: res.role });
         if (res.role === 'ROLE_ADMIN') {
           setSuccessMsg('Admin credentials verified! Entering Operations Command Center...');
           setTimeout(() => navigate('/admin'), 600);
@@ -33,8 +34,8 @@ export const LoginPage: React.FC = () => {
           setTimeout(() => navigate('/'), 900);
         }
       } else {
-        const res = await authApi.register(email, password);
-        setAuth(res.token, { id: res.userId, email: res.email, role: res.role });
+        const res = await authApi.register(email, password, name);
+        setAuth(res.token, { id: res.userId, email: res.email, name: res.name, role: res.role });
         setSuccessMsg('Account created successfully! Redirecting...');
         setTimeout(() => navigate('/'), 900);
       }
@@ -71,7 +72,12 @@ export const LoginPage: React.FC = () => {
                   <User className="w-5 h-5" />
                 </div>
                 <div>
-                  <div className="text-sm font-semibold text-white">{user.email}</div>
+                  <div className="text-sm font-semibold text-white">
+                    {user.name ? `${user.name}` : user.email}
+                  </div>
+                  {user.name && (
+                    <div className="text-xs text-slate-400">{user.email}</div>
+                  )}
                   <div className="text-xs text-slate-400 flex items-center space-x-1.5 mt-0.5">
                     <ShieldCheck className="w-3.5 h-3.5 text-surge-emerald" />
                     <span>Role: <strong className="text-brand-300">{user.role}</strong></span>
@@ -147,6 +153,23 @@ export const LoginPage: React.FC = () => {
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
+              {mode === 'register' && (
+                <div>
+                  <label className="block text-xs font-medium text-slate-300 mb-1.5">Full Name</label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      placeholder="e.g. Priya Sharma / Alex Johnson"
+                      className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-white text-sm focus:border-brand-500 focus:outline-none placeholder-slate-500"
+                    />
+                    <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-xs font-medium text-slate-300 mb-1.5">Email Address</label>
                 <div className="relative">

@@ -12,6 +12,8 @@ import com.ticket.model.entity.User;
 import com.ticket.model.enums.EventStatus;
 import com.ticket.model.enums.OrderStatus;
 import com.ticket.model.enums.PaymentStatus;
+import com.ticket.model.entity.BlockchainBlock;
+import com.ticket.repository.BlockchainBlockRepository;
 import com.ticket.repository.EventRepository;
 import com.ticket.repository.OrderRepository;
 import com.ticket.repository.PaymentRepository;
@@ -28,6 +30,7 @@ import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Slf4j
@@ -44,6 +47,9 @@ public class OrderService {
     private final MetricsService metricsService;
     private final RedisTemplate<String, Object> redisTemplate;
     private final ActivityLogService activityLogService;
+    private final EmailService emailService;
+    private final BlockchainService blockchainService;
+    private final BlockchainBlockRepository blockchainBlockRepository;
 
     @Value("${app.order.hold-ttl-seconds:600}")
     private long holdTtlSeconds;
@@ -52,6 +58,10 @@ public class OrderService {
     public static final String REDIS_HOLD_PREFIX = "ticket:hold:";
 
     public HoldTicketResponse holdTickets(UUID userId, UUID eventId, int ticketCount) {
+        return holdTickets(userId, eventId, ticketCount, null);
+    }
+
+    public HoldTicketResponse holdTickets(UUID userId, UUID eventId, int ticketCount, String selectedSeats) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
@@ -70,11 +80,12 @@ public class OrderService {
         Instant expiresAt = now.plus(holdTtlSeconds, ChronoUnit.SECONDS);
         BigDecimal totalAmount = DEFAULT_TICKET_PRICE.multiply(BigDecimal.valueOf(ticketCount));
 
-        // 3. Create Pending Order record
+        // 3. Create Pending Order record with selected seats
         Order order = Order.builder()
                 .user(user)
                 .event(event)
                 .ticketCount(ticketCount)
+                .seatNumbers(selectedSeats)
                 .totalAmount(totalAmount)
                 .status(OrderStatus.PENDING)
                 .holdExpiresAt(expiresAt)
@@ -97,14 +108,15 @@ public class OrderService {
         }
 
         metricsService.incrementOrdersCreated();
-        log.info("Held {} tickets for user {} on event {}. Order ID: {}, Expires at: {}",
-                ticketCount, userId, eventId, savedOrder.getId(), expiresAt);
+        log.info("Held {} tickets (Seats: {}) for user {} on event {}. Order ID: {}, Expires at: {}",
+                ticketCount, selectedSeats, userId, eventId, savedOrder.getId(), expiresAt);
 
         activityLogService.recordActivity(
                 userId,
                 user.getEmail(),
                 "TICKETS_HELD",
-                "Held " + ticketCount + " ticket(s) for " + event.getName() + " (Order " + savedOrder.getId().toString().substring(0, 8) + " - ₹" + totalAmount + ")",
+                "Held " + ticketCount + " ticket(s) (Seats: " + (selectedSeats != null ? selectedSeats : "Auto-allocated") +
+                        ") for " + event.getName() + " (Order " + savedOrder.getId().toString().substring(0, 8) + " - ₹" + totalAmount + ")",
                 "SUCCESS",
                 null
         );
@@ -114,6 +126,7 @@ public class OrderService {
                 .eventId(eventId)
                 .userId(userId)
                 .ticketCount(ticketCount)
+                .seatNumbers(selectedSeats)
                 .totalAmount(totalAmount)
                 .status(savedOrder.getStatus())
                 .holdExpiresAt(expiresAt)
@@ -178,6 +191,20 @@ public class OrderService {
                 null
         );
 
+        // Automatically dispatch booking confirmation email to customer
+        try {
+            emailService.sendBookingConfirmationEmail(confirmedOrder);
+        } catch (Exception e) {
+            log.warn("Non-fatal: Email dispatch encountered an issue: {}", e.getMessage());
+        }
+
+        // Automatically mine and mint on-chain Blockchain block for seat booking
+        try {
+            blockchainService.mineSeatBookingBlock(confirmedOrder, payment);
+        } catch (Exception e) {
+            log.warn("Non-fatal: Blockchain seat minting encountered an issue: {}", e.getMessage());
+        }
+
         return mapToOrderResponse(confirmedOrder);
     }
 
@@ -226,16 +253,28 @@ public class OrderService {
     }
 
     private OrderResponse mapToOrderResponse(Order order) {
-        return OrderResponse.builder()
+        Optional<BlockchainBlock> blockOpt = blockchainBlockRepository.findByOrderId(order.getId().toString());
+
+        OrderResponse.OrderResponseBuilder builder = OrderResponse.builder()
                 .orderId(order.getId())
                 .userId(order.getUser().getId())
                 .eventId(order.getEvent().getId())
                 .eventName(order.getEvent().getName())
                 .ticketCount(order.getTicketCount())
+                .seatNumbers(order.getSeatNumbers())
                 .totalAmount(order.getTotalAmount())
                 .status(order.getStatus())
                 .createdAt(order.getCreatedAt())
-                .updatedAt(order.getUpdatedAt())
-                .build();
+                .updatedAt(order.getUpdatedAt());
+
+        blockOpt.ifPresent(block -> {
+            builder.blockHash(block.getBlockHash())
+                    .blockIndex(block.getBlockIndex())
+                    .tokenId(block.getTokenId())
+                    .contractAddress(block.getContractAddress())
+                    .buyerWallet(block.getBuyerWallet());
+        });
+
+        return builder.build();
     }
 }

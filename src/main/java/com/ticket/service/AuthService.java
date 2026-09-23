@@ -32,8 +32,10 @@ public class AuthService {
             throw new IllegalArgumentException("User with email " + request.getEmail() + " already exists.");
         }
 
+        String userName = request.getName() != null && !request.getName().isBlank() ? request.getName().trim() : null;
         User user = User.builder()
                 .email(request.getEmail().toLowerCase().trim())
+                .name(userName)
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
                 .role(UserRole.ROLE_USER)
                 .createdAt(Instant.now())
@@ -46,7 +48,7 @@ public class AuthService {
                 savedUser.getId(),
                 savedUser.getEmail(),
                 "USER_REGISTER",
-                "New account created with role " + savedUser.getRole().name(),
+                "New account created for " + savedUser.getDisplayName() + " with role " + savedUser.getRole().name(),
                 "SUCCESS",
                 null
         );
@@ -56,6 +58,7 @@ public class AuthService {
                 .tokenType("Bearer")
                 .userId(savedUser.getId())
                 .email(savedUser.getEmail())
+                .name(savedUser.getDisplayName())
                 .role(savedUser.getRole().name())
                 .build();
     }
@@ -92,6 +95,7 @@ public class AuthService {
                 .tokenType("Bearer")
                 .userId(user.getId())
                 .email(user.getEmail())
+                .name(user.getDisplayName())
                 .role(user.getRole().name())
                 .build();
     }
