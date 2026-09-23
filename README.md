@@ -20,7 +20,7 @@
 
 ---
 
-### 🏆 Team Sparckly Coders — Hackathon 2026
+### 🏆 Team Sparkly Coders — Hackathon 2026
 
 | Member | Role | Focus Areas |
 |:---|:---|:---|
