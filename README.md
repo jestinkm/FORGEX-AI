@@ -2,7 +2,7 @@
 
 <img src="./public/fairseat-banner.svg" alt="FairSeat High-Concurrency Ticketing Platform Banner" width="100%" style="border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);" />
 
-# 🎟️ FairSeat
+# 🎟️ Scalable Available Booking System (FairSeat)
 
 ### *"Guaranteed Fair Ticketing at Massive Scale — Zero Overselling, Zero Counterfeits."*
 
@@ -20,13 +20,14 @@
 
 ---
 
-### 🏆 Team Xeno — Hackathon 2026
+### 🏆 Team Sparckly Coders — Hackathon 2026
 
 | Member | Role | Focus Areas |
 |:---|:---|:---|
-| **Subhash B** | Full-Stack & Concurrency Architect | High-Concurrency Engine, JPA Optimistic Locking, PoA Blockchain Ledger, Spring Boot 3.3 Backend |
-| **Ezhilkumaran K** | Frontend & UI/UX Architect | BookMyShow Interactive Seating Designer, Real-Time Queue UI, Gate Pass QR Scanner, Tailwind CSS |
-| **Sandhya Rani Y** | Backend, Database & Distributed Systems | Supabase PostgreSQL Schema, Redis Sorted Sets, k6 Stress-Testing (10k/500k), Idempotent Checkout |
+| **Jestin M K** | Full-Stack & Concurrency Architect | High-concurrency booking engine, JPA optimistic locking mechanisms, Proof-of-Authority (PoA) blockchain ledger, Spring Boot 3.3 backend architecture |
+| **Divyadharshini B** | Frontend & UI/UX Architect | BookMyShow-style interactive seating experience, real-time virtual waiting room UI, gate-pass QR scanner interface, Tailwind CSS |
+| **Arjunkumar R** | Backend, Database & Distributed Systems Lead | Supabase PostgreSQL database schema, Redis Sorted Set-based queue system, idempotent checkout architecture, k6 stress testing (10k/500k) |
+| **Navyasri K S** | Security & Testing Architect | Authentication & authorization, API security, blockchain-based ticket verification, integration testing & security validation |
 
 </div>
 
@@ -397,19 +398,20 @@ k6 run k6_fairseat_stress_test.js
 ---
 
 ## 👥 Hackathon Presentation & Team Roles
-
-FairSeat was engineered from the ground up for the **2026 National Hackathon Challenge WA-2** by **Team Xeno**:
-
-- **Subhash B** (Full-Stack & Concurrency Lead): Architected the dual-layer concurrency system, JPA optimistic locking routines, SHA-256 Merkle blockchain ledger, and Spring Boot 3.3 standalone/production backends.
-- **Ezhilkumaran K** (Frontend & UI/UX Architect): Designed the BookMyShow-style cinema seating experience, real-time waiting room queue animations, venue gate scanner with live hardware camera feed, and responsive dark-mode cinema aesthetic.
-- **Sandhya Rani Y** (Backend, Database & Distributed Systems Lead): Designed the Supabase PostgreSQL database schema, Redis Sorted Set FIFO queue engine, 10-minute hold TTL auto-sweeper, and executed the 500,000-user k6 stress test.
-
----
-
-<div align="center">
-
-### Built for Unmatched Concurrency & Absolute Fairness.
-
-Made with 💙 by **Team Xeno**
-
-</div>
+ 
+ Scalable Available Booking System was engineered from the ground up for the **2026 National Hackathon Challenge WA-2** by **Team Sparckly Coders**:
+ 
+ - **Jestin M K** (**Full-Stack & Concurrency Architect**): Architected the high-concurrency booking engine, JPA optimistic locking mechanisms, Proof-of-Authority (PoA) blockchain ledger, and Spring Boot 3.3 backend architecture.
+ - **Divyadharshini B** (**Frontend & UI/UX Architect**): Designed the BookMyShow-style interactive seating experience, real-time virtual waiting room UI, gate-pass QR scanner interface, and responsive cinema-themed frontend using Tailwind CSS.
+ - **Arjunkumar R** (**Backend, Database & Distributed Systems Lead**): Designed the Supabase PostgreSQL database schema, Redis Sorted Set-based queue system, idempotent checkout architecture, and conducted k6 stress testing for **10,000-ticket / 500,000-user** scenarios.
+ - **Navyasri K S** (**Security & Testing Architect**): Focused on authentication and authorization, API security, blockchain-based ticket verification, integration testing, and security validation to ensure reliable and tamper-resistant ticket processing.
+ 
+ ---
+ 
+ <div align="center">
+ 
+ ### Built for Unmatched Concurrency & Absolute Fairness.
+ 
+ Made with 💙 by **Team Sparckly Coders**
+ 
+ </div>
